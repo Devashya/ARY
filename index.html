@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stationary Building with In-Place Rotation</title>
+    <title>Stationary Building with Fixed Rotation in AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
 
@@ -16,7 +16,7 @@
                 this.startPosition = { x: 0, y: 0 };
                 this.rotation = { x: 0, y: 0 };
 
-                // Event listeners for desktop (mouse)
+                // Mouse interaction (Desktop)
                 this.el.sceneEl.addEventListener('mousedown', (evt) => {
                     this.isRotating = true;
                     this.startPosition.x = evt.screenX;
@@ -27,10 +27,10 @@
 
                 this.el.sceneEl.addEventListener('mousemove', (evt) => {
                     if (this.isRotating) {
-                        const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 100;
-                        const deltaY = (evt.screenY - this.startPosition.y) * this.data.speed / 100;
-                        this.el.object3D.rotation.y = this.rotation.y + deltaX;
-                        this.el.object3D.rotation.x = this.rotation.x + deltaY;
+                        const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 200;
+                        const deltaY = (evt.screenY - this.startPosition.y) * this.data.speed / 200;
+                        this.el.object3D.rotation.y = this.rotation.y + deltaX; // Rotate on Y-axis (left-right)
+                        this.el.object3D.rotation.x = this.rotation.x + deltaY; // Rotate on X-axis (up-down)
                     }
                 });
 
@@ -38,7 +38,7 @@
                     this.isRotating = false;
                 });
 
-                // Event listeners for mobile (touch)
+                // Touch interaction (Mobile)
                 this.el.sceneEl.addEventListener('touchstart', (evt) => {
                     this.isRotating = true;
                     this.startPosition.x = evt.touches[0].screenX;
@@ -49,8 +49,8 @@
 
                 this.el.sceneEl.addEventListener('touchmove', (evt) => {
                     if (this.isRotating) {
-                        const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 100;
-                        const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 100;
+                        const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 200;
+                        const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 200;
                         this.el.object3D.rotation.y = this.rotation.y + deltaX;
                         this.el.object3D.rotation.x = this.rotation.x + deltaY;
                     }
@@ -73,14 +73,4 @@
         <a-marker type="pattern" url="Barcode.patt">
             
             <!-- Stationary Building that rotates in place -->
-            <a-box id="building" position="0 0.5 0" depth="1.5" height="3" width="1.5"
-                   material="src: url(building.jpg);" 
-                   rotate-in-place></a-box>
-
-        </a-marker>
-
-        <!-- Camera -->
-        <a-entity camera look-controls></a-entity>
-    </a-scene>
-</body>
-</html>
+            <a-box id="
