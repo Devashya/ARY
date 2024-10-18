@@ -3,52 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Futuristic Floating City in AR</title>
+    <title>Interactive Building in AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
-    <script src="https://unpkg.com/aframe-drag-look-controls-component/dist/aframe-drag-look-controls-component.min.js"></script>
 
-    <!-- Zoom Handling Script -->
+    <!-- Custom Drag and Rotate Script for Full 3D Interaction -->
     <script>
-        AFRAME.registerComponent('zoom-control', {
-            schema: {
-                minZoom: { type: 'number', default: 1 },
-                maxZoom: { type: 'number', default: 10 }
-            },
+        AFRAME.registerComponent('drag-rotate-component', {
+            schema: { speed: { default: 1 } },
             init: function () {
-                var cameraEl = this.el;
-                var zoomLevel = 5;
-
-                window.addEventListener('wheel', function (event) {
-                    if (event.deltaY < 0) {
-                        zoomLevel = Math.max(cameraEl.getAttribute('position').z - 0.2, this.data.minZoom);
-                    } else {
-                        zoomLevel = Math.min(cameraEl.getAttribute('position').z + 0.2, this.data.maxZoom);
-                    }
-                    cameraEl.setAttribute('position', {x: 0, y: 1.6, z: zoomLevel});
-                });
-
-                var initialDistance = null;
-                window.addEventListener('touchmove', function (event) {
-                    if (event.touches.length === 2) {
-                        var touch1 = event.touches[0];
-                        var touch2 = event.touches[1];
-                        var currentDistance = Math.sqrt(Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2));
-                        
-                        if (!initialDistance) {
-                            initialDistance = currentDistance;
-                        } else {
-                            var zoomFactor = (initialDistance - currentDistance) * 0.01;
-                            zoomLevel = Math.max(Math.min(cameraEl.getAttribute('position').z + zoomFactor, this.data.maxZoom), this.data.minZoom);
-                            cameraEl.setAttribute('position', {x: 0, y: 1.6, z: zoomLevel});
-                            initialDistance = currentDistance;
-                        }
-                    }
-                });
-
-                window.addEventListener('touchend', function () {
-                    initialDistance = null;
-                });
+                this.isDragging = false;
+                this.startRotation = null;
+                this.currentRotation = null;
+                this.el.sceneEl.addEventListener('mousedown', this.onMouseDown.bind(this));
+                this.el.sceneEl.addEventListener('mousemove', this.onMouseMove.bind(this));
+                this.el.sceneEl.addEventListener('mouseup', this.onMouseUp.bind(this));
+                this.el.sceneEl.addEventListener('touchstart', this.onTouchStart.bind(this));
+                this.el.sceneEl.addEventListener('touchmove', this.onTouchMove.bind(this));
+                this.el.sceneEl.addEventListener('touchend', this.onTouchEnd.bind(this));
+            },
+            onMouseDown: function (evt) {
+                this.isDragging = true;
+                this.startRotation = evt.screenX;
+                this.currentRotation = this.el.object3D.rotation.clone();
+            },
+            onMouseMove: function (evt) {
+                if (!this.isDragging) return;
+                var rotationChange = (evt.screenX - this.startRotation) * this.data.speed / 100;
+                this.el.object3D.rotation.y = this.currentRotation.y + rotationChange;
+            },
+            onMouseUp: function () {
+                this.isDragging = false;
+            },
+            onTouchStart: function (evt) {
+                this.isDragging = true;
+                this.startRotation = evt.touches[0].screenX;
+                this.currentRotation = this.el.object3D.rotation.clone();
+            },
+            onTouchMove: function (evt) {
+                if (!this.isDragging) return;
+                var rotationChange = (evt.touches[0].screenX - this.startRotation) * this.data.speed / 100;
+                this.el.object3D.rotation.y = this.currentRotation.y + rotationChange;
+            },
+            onTouchEnd: function () {
+                this.isDragging = false;
             }
         });
     </script>
@@ -59,33 +57,18 @@
         <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
         <a-light type="directional" position="2 4 5" intensity="1" castShadow="true"></a-light>
 
-        <!-- Custom Pattern Marker (Ensure ar_marker.patt is uploaded) -->
+        <!-- Custom Pattern Marker (Ensure your ar_marker.patt is correctly uploaded) -->
         <a-marker type="pattern" url="Barcode.patt">
-
-            <!-- City Hub (Futuristic Skyscraper) -->
-            <a-box id="cityHub" position="0 0.5 0" depth="0.8" height="2" width="0.8"
-                   material="color: #5DADE2; emissive: #0040FF; emissiveIntensity: 0.6;" 
-                   gesture-handler></a-box>
             
-            <!-- Flying Car (Static, but user can interact) -->
-            <a-box id="flyingCar" position="1.5 0.5 0" depth="0.2" height="0.1" width="0.4"
-                   material="color: #FF5733; emissive: #FF3333; emissiveIntensity: 0.5;" 
-                   gesture-handler></a-box>
-
-            <!-- Drone (Static, but user can interact) -->
-            <a-cylinder id="drone" position="2 1 0" radius="0.1" height="0.1"
-                        material="color: #AED6F1; emissive: #33FF57; emissiveIntensity: 0.8;"
-                        gesture-handler></a-cylinder>
-
-            <!-- City Block (Use image texture for wrapping, static but interactive) -->
-            <a-box id="cityBlock" position="2.5 0.5 0" depth="0.5" height="0.3" width="0.5"
+            <!-- Large Building that the user can rotate -->
+            <a-box id="building" position="0 0.5 0" depth="1.5" height="3" width="1.5"
                    material="src: url(building.jpg);" 
-                   gesture-handler></a-box>
+                   drag-rotate-component></a-box>
 
         </a-marker>
 
-        <!-- Camera with Drag Controls and Zoom Controls -->
-        <a-entity camera look-controls drag-look-controls zoom-control></a-entity>
+        <!-- Camera -->
+        <a-entity camera look-controls></a-entity>
     </a-scene>
 </body>
 </html>
