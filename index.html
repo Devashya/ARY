@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Interactive Building in AR</title>
+    <title>Interactive Rotating Building in AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
 
-    <!-- Custom Drag and Rotate Script for Full 3D Interaction -->
+    <!-- Custom Drag and Rotate Script for 360-Degree Rotation -->
     <script>
         AFRAME.registerComponent('drag-rotate-component', {
             schema: { speed: { default: 1 } },
             init: function () {
                 this.isDragging = false;
-                this.startRotation = null;
-                this.currentRotation = null;
+                this.startRotation = { x: 0, y: 0 };
+                this.currentRotation = this.el.object3D.rotation.clone();
                 this.el.sceneEl.addEventListener('mousedown', this.onMouseDown.bind(this));
                 this.el.sceneEl.addEventListener('mousemove', this.onMouseMove.bind(this));
                 this.el.sceneEl.addEventListener('mouseup', this.onMouseUp.bind(this));
@@ -24,26 +24,32 @@
             },
             onMouseDown: function (evt) {
                 this.isDragging = true;
-                this.startRotation = evt.screenX;
+                this.startRotation.x = evt.screenX;
+                this.startRotation.y = evt.screenY;
                 this.currentRotation = this.el.object3D.rotation.clone();
             },
             onMouseMove: function (evt) {
                 if (!this.isDragging) return;
-                var rotationChange = (evt.screenX - this.startRotation) * this.data.speed / 100;
-                this.el.object3D.rotation.y = this.currentRotation.y + rotationChange;
+                var rotationChangeX = (evt.screenX - this.startRotation.x) * this.data.speed / 100;
+                var rotationChangeY = (evt.screenY - this.startRotation.y) * this.data.speed / 100;
+                this.el.object3D.rotation.y = this.currentRotation.y + rotationChangeX;
+                this.el.object3D.rotation.x = this.currentRotation.x + rotationChangeY;
             },
             onMouseUp: function () {
                 this.isDragging = false;
             },
             onTouchStart: function (evt) {
                 this.isDragging = true;
-                this.startRotation = evt.touches[0].screenX;
+                this.startRotation.x = evt.touches[0].screenX;
+                this.startRotation.y = evt.touches[0].screenY;
                 this.currentRotation = this.el.object3D.rotation.clone();
             },
             onTouchMove: function (evt) {
                 if (!this.isDragging) return;
-                var rotationChange = (evt.touches[0].screenX - this.startRotation) * this.data.speed / 100;
-                this.el.object3D.rotation.y = this.currentRotation.y + rotationChange;
+                var rotationChangeX = (evt.touches[0].screenX - this.startRotation.x) * this.data.speed / 100;
+                var rotationChangeY = (evt.touches[0].screenY - this.startRotation.y) * this.data.speed / 100;
+                this.el.object3D.rotation.y = this.currentRotation.y + rotationChangeX;
+                this.el.object3D.rotation.x = this.currentRotation.x + rotationChangeY;
             },
             onTouchEnd: function () {
                 this.isDragging = false;
@@ -57,10 +63,10 @@
         <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
         <a-light type="directional" position="2 4 5" intensity="1" castShadow="true"></a-light>
 
-        <!-- Custom Pattern Marker (Ensure your ar_marker.patt is correctly uploaded) -->
+        <!-- Custom Pattern Marker (Ensure ar_marker.patt is correctly uploaded) -->
         <a-marker type="pattern" url="Barcode.patt">
             
-            <!-- Large Building that the user can rotate -->
+            <!-- Large Building that remains static in the center but can be rotated 360 degrees -->
             <a-box id="building" position="0 0.5 0" depth="1.5" height="3" width="1.5"
                    material="src: url(building.jpg);" 
                    drag-rotate-component></a-box>
