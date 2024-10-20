@@ -14,7 +14,7 @@
             init: function () {
                 this.isRotating = false;
                 this.startX = 0;
-                this.currentYRotation = this.el.object3D.rotation.y;
+                this.currentYRotation = 0;
 
                 // Mouse events for desktop
                 this.el.sceneEl.addEventListener('mousedown', (evt) => {
@@ -59,11 +59,11 @@
         <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
         <a-light type="directional" position="2 4 5" intensity="1" castShadow="true"></a-light>
 
-        <!-- Custom Pattern Marker (Ensure ar_marker.patt is correctly uploaded) -->
+        <!-- Custom Pattern Marker -->
         <a-marker type="pattern" url="Barcode.patt">
             
             <!-- Large Building that remains centered and rotates along Y-axis -->
-            <a-box id="building" position="0 0.5 0" depth="1.5" height="3" width="1.5"
+            <a-box id="building" position="0 1.5 0" depth="1.5" height="3" width="1.5"
                    material="src: url(building.jpg);" 
                    y-axis-rotate></a-box>
 
