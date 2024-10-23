@@ -56,11 +56,11 @@
 
         this.el.sceneEl.addEventListener('touchmove', (evt) => {
             if (this.isRotating) {
-                const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 200;
-                const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 200;
+                const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 100;
+                const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 100;
                 // Apply both Y (side-to-side) and X (up-down) rotations
                 this.el.object3D.rotation.y = this.rotation.y + deltaX; // Y-axis rotation
-                this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
+                this.el.object3D.rotation.x = this.rotation.y + deltaY; // X-axis rotation
                 // Fix object's position after rotation to prevent drifting
                 this.el.object3D.position.copy(this.originalPosition);
             }
