@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,78 +7,110 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
 
-    <!-- Custom Rotate-in-Place Component -->
+    <!-- Custom Rotate-in-Place and Zoom Component -->
     <script>
-    AFRAME.registerComponent('rotate-in-place', {
-    schema: { speed: { default: 1 } },
-    init: function () {
-        this.isRotating = false;
-        this.startPosition = { x: 0, y: 0 };
-        this.rotation = { x: 0, y: 0 };
-
-        // Save original position to prevent drifting
-        this.originalPosition = this.el.object3D.position.clone();
-
-        // Mouse interaction (Desktop)
-        this.el.sceneEl.addEventListener('mousedown', (evt) => {
-            this.isRotating = true;
-            this.startPosition.x = evt.screenX;
-            this.startPosition.y = evt.screenY;
-            this.rotation.x = this.el.object3D.rotation.x;
-            this.rotation.y = this.el.object3D.rotation.y;
-        });
-
-        this.el.sceneEl.addEventListener('mousemove', (evt) => {
-            if (this.isRotating) {
-                const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 250;
-                const deltaY = (evt.screenY - this.startPosition.y) * this.data.speed / 250;
-                // Apply both Y (side-to-side) and X (up-down) rotations
-                this.el.object3D.rotation.y = this.rotation.y + deltaY; // Y-axis rotation
-                this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
-                // Fix object's position after rotation to prevent drifting
-                this.el.object3D.position.copy(this.originalPosition);
-            }
-        });
-
-        this.el.sceneEl.addEventListener('mouseup', () => {
+    AFRAME.registerComponent('rotate-and-zoom', {
+        schema: { speed: { default: 1 } },
+        init: function () {
             this.isRotating = false;
-        });
+            this.startPosition = { x: 0, y: 0 };
+            this.rotation = { x: 0, y: 0 };
 
-        // Touch interaction (Mobile)
-        this.el.sceneEl.addEventListener('touchstart', (evt) => {
-            this.isRotating = true;
-            this.startPosition.x = evt.touches[0].screenX;
-            this.startPosition.y = evt.touches[0].screenY;
-            this.rotation.x = this.el.object3D.rotation.x;
-            this.rotation.y = this.el.object3D.rotation.y;
-        });
+            // Save original position to prevent drifting
+            this.originalPosition = this.el.object3D.position.clone();
 
-        this.el.sceneEl.addEventListener('touchmove', (evt) => {
-            if (this.isRotating) {
-                const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 250;
-                const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 250;
-                // Apply both Y (side-to-side) and X (up-down) rotations
-                this.el.object3D.rotation.y = this.rotation.y + deltaY; // Y-axis rotation
-                this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
-                // Fix object's position after rotation to prevent drifting
-                this.el.object3D.position.copy(this.originalPosition);
-            }
-        });
+            // Handle scaling (zooming)
+            this.initialDistance = 0;
+            this.currentScale = this.el.object3D.scale.clone();
 
-        this.el.sceneEl.addEventListener('touchend', () => {
-            this.isRotating = false;
-        });
+            // Mouse interaction (Desktop)
+            this.el.sceneEl.addEventListener('mousedown', (evt) => {
+                this.isRotating = true;
+                this.startPosition.x = evt.screenX;
+                this.startPosition.y = evt.screenY;
+                this.rotation.x = this.el.object3D.rotation.x;
+                this.rotation.y = this.el.object3D.rotation.y;
+            });
 
-        // Ensure the position remains fixed after any rotation change
-        this.el.addEventListener('componentchanged', (evt) => {
-            if (evt.detail.name === 'rotation') {
-                this.el.object3D.position.copy(this.originalPosition);
-            }
-        });
-    }
-});
-</script>
+            this.el.sceneEl.addEventListener('mousemove', (evt) => {
+                if (this.isRotating) {
+                    const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 250;
+                    const deltaY = (evt.screenY - this.startPosition.y) * this.data.speed / 250;
+                    // Apply both Y (side-to-side) and X (up-down) rotations
+                    this.el.object3D.rotation.y = this.rotation.y + deltaX; // Y-axis rotation
+                    this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
+                    // Fix object's position after rotation to prevent drifting
+                    this.el.object3D.position.copy(this.originalPosition);
+                }
+            });
 
+            this.el.sceneEl.addEventListener('mouseup', () => {
+                this.isRotating = false;
+            });
+
+            // Touch interaction (Mobile)
+            this.el.sceneEl.addEventListener('touchstart', (evt) => {
+                if (evt.touches.length === 2) {
+                    // Two fingers means pinch start
+                    this.initialDistance = this.getDistance(evt.touches[0], evt.touches[1]);
+                    this.currentScale = this.el.object3D.scale.clone();
+                } else if (evt.touches.length === 1) {
+                    // Single finger for rotation
+                    this.isRotating = true;
+                    this.startPosition.x = evt.touches[0].screenX;
+                    this.startPosition.y = evt.touches[0].screenY;
+                    this.rotation.x = this.el.object3D.rotation.x;
+                    this.rotation.y = this.el.object3D.rotation.y;
+                }
+            });
+
+            this.el.sceneEl.addEventListener('touchmove', (evt) => {
+                if (evt.touches.length === 2) {
+                    // Pinch to zoom
+                    const newDistance = this.getDistance(evt.touches[0], evt.touches[1]);
+                    const scaleChange = newDistance / this.initialDistance;
+                    this.el.object3D.scale.set(
+                        this.currentScale.x * scaleChange,
+                        this.currentScale.y * scaleChange,
+                        this.currentScale.z * scaleChange
+                    );
+                } else if (this.isRotating) {
+                    const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 250;
+                    const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 250;
+                    // Apply both Y (side-to-side) and X (up-down) rotations
+                    this.el.object3D.rotation.y = this.rotation.y + deltaX; // Y-axis rotation
+                    this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
+                    // Fix object's position after rotation to prevent drifting
+                    this.el.object3D.position.copy(this.originalPosition);
+                }
+            });
+
+            this.el.sceneEl.addEventListener('touchend', () => {
+                this.isRotating = false;
+            });
+
+            // Mouse scroll for zooming on desktop
+            this.el.sceneEl.addEventListener('wheel', (evt) => {
+                const scaleFactor = 1 - evt.deltaY * 0.001; // Adjust scale based on wheel scroll
+                this.el.object3D.scale.multiplyScalar(scaleFactor);
+            });
+
+            // Ensure the position remains fixed after any rotation change
+            this.el.addEventListener('componentchanged', (evt) => {
+                if (evt.detail.name === 'rotation') {
+                    this.el.object3D.position.copy(this.originalPosition);
+                }
+            });
+        },
+
+        // Helper function to calculate distance between two touch points
+        getDistance: function (touch1, touch2) {
+            const dx = touch1.screenX - touch2.screenX;
+            const dy = touch1.screenY - touch2.screenY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+    });
+    </script>
 </head>
 <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs>
@@ -89,12 +120,10 @@
 
         <!-- Marker (Ensure ar_marker.patt is correctly uploaded) -->
         <a-marker type="pattern" url="Barcode.patt">
-            
-            <!-- Stationary Building that rotates in place -->
+            <!-- Stationary Building that rotates and zooms in place -->
             <a-box id="building" position="0 0.5 0" depth="1.5" height="3" width="1.5"
                    material="src: url(building.jpg);" 
-                   rotate-in-place></a-box>
-
+                   rotate-and-zoom></a-box>
         </a-marker>
 
         <!-- Camera -->
