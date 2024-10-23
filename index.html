@@ -31,8 +31,8 @@
 
         this.el.sceneEl.addEventListener('mousemove', (evt) => {
             if (this.isRotating) {
-                const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 300;
-                const deltaY = (evt.screenY - this.startPosition.y) * this.data.speed / 300;
+                const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 250;
+                const deltaY = (evt.screenY - this.startPosition.y) * this.data.speed / 250;
                 // Apply both Y (side-to-side) and X (up-down) rotations
                 this.el.object3D.rotation.y = this.rotation.y + deltaY; // Y-axis rotation
                 this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
@@ -56,8 +56,8 @@
 
         this.el.sceneEl.addEventListener('touchmove', (evt) => {
             if (this.isRotating) {
-                const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 300;
-                const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 300;
+                const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 250;
+                const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 250;
                 // Apply both Y (side-to-side) and X (up-down) rotations
                 this.el.object3D.rotation.y = this.rotation.y + deltaY; // Y-axis rotation
                 this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
