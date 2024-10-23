@@ -88,6 +88,10 @@
             this.el.sceneEl.addEventListener('touchend', () => {
                 this.isRotating = false;
             });
+            this.el.sceneEl.addEventListener('dblclick', () => {
+                this.el.object3D.rotation.set(0, 0, 0);
+                this.el.object3D.scale.set(1, 1, 1);
+            });
 
             // Mouse scroll for zooming on desktop
             this.el.sceneEl.addEventListener('wheel', (evt) => {
@@ -101,6 +105,7 @@
                     this.el.object3D.position.copy(this.originalPosition);
                 }
             });
+            
         },
 
         // Helper function to calculate distance between two touch points
