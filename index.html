@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stationary Building with Fixed Rotation in AR</title>
+    <title>Stationary Building with Fixed Rotation and Zoom in AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.2/aframe/build/aframe-ar.js"></script>
 
-    <!-- Custom Rotate-in-Place and Zoom Component -->
+    <!-- Custom Rotate-in-Place and Zoom Component with Reset Feature -->
     <script>
     AFRAME.registerComponent('rotate-and-zoom', {
         schema: { speed: { default: 1 } },
@@ -88,10 +88,6 @@
             this.el.sceneEl.addEventListener('touchend', () => {
                 this.isRotating = false;
             });
-            this.el.sceneEl.addEventListener('dblclick', () => {
-                this.el.object3D.rotation.set(0, 0, 0);
-                this.el.object3D.scale.set(1, 1, 1);
-            });
 
             // Mouse scroll for zooming on desktop
             this.el.sceneEl.addEventListener('wheel', (evt) => {
@@ -105,7 +101,21 @@
                     this.el.object3D.position.copy(this.originalPosition);
                 }
             });
-            
+
+            // Double-tap or double-click to reset rotation and scale
+            this.el.sceneEl.addEventListener('dblclick', () => {
+                this.resetObject();
+            });
+
+            this.el.sceneEl.addEventListener('dbltap', () => {
+                this.resetObject();
+            });
+        },
+
+        // Reset the object's scale and rotation
+        resetObject: function () {
+            this.el.object3D.rotation.set(0, 0, 0);
+            this.el.object3D.scale.set(1, 1, 1);
         },
 
         // Helper function to calculate distance between two touch points
@@ -123,7 +133,7 @@
         <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
         <a-light type="directional" position="2 4 5" intensity="1" castShadow="true"></a-light>
 
-        <!-- Marker (Ensure ar_marker.patt is correctly uploaded) -->
+        <!-- Marker (Ensure Barcode.patt is correctly uploaded) -->
         <a-marker type="pattern" url="Barcode.patt">
             <!-- Stationary Building that rotates and zooms in place -->
             <a-box id="building" position="0 0.5 0" depth="1.5" height="3" width="1.5"
