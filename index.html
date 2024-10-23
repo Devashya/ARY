@@ -34,8 +34,8 @@
                 const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 300;
                 const deltaY = (evt.screenY - this.startPosition.y) * this.data.speed / 300;
                 // Apply both Y (side-to-side) and X (up-down) rotations
-                this.el.object3D.rotation.y = this.rotation.y + deltaX; // Y-axis rotation
-                this.el.object3D.rotation.x = this.rotation.x + deltaX; // X-axis rotation
+                this.el.object3D.rotation.y = this.rotation.y + deltaY; // Y-axis rotation
+                this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
                 // Fix object's position after rotation to prevent drifting
                 this.el.object3D.position.copy(this.originalPosition);
             }
@@ -59,8 +59,8 @@
                 const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 300;
                 const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 300;
                 // Apply both Y (side-to-side) and X (up-down) rotations
-                this.el.object3D.rotation.y = this.rotation.y + deltaX; // Y-axis rotation
-                this.el.object3D.rotation.x = this.rotation.x + deltaX; // X-axis rotation
+                this.el.object3D.rotation.y = this.rotation.y + deltaY; // Y-axis rotation
+                this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation
                 // Fix object's position after rotation to prevent drifting
                 this.el.object3D.position.copy(this.originalPosition);
             }
