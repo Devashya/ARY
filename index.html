@@ -11,67 +11,60 @@
     <!-- Custom Rotate-in-Place Component -->
     <script>
     AFRAME.registerComponent('rotate-in-place', {
-        schema: { speed: { default: 1 } },
-        init: function () {
+    schema: { speed: { default: 1 } },
+    init: function () {
+        this.isRotating = false;
+        this.startPosition = { x: 0, y: 0 };
+        this.rotation = { x: 0, y: 0 };
+
+        // Save original position to prevent drifting
+        this.originalPosition = this.el.object3D.position.clone();
+
+        // Mouse interaction (Desktop)
+        this.el.sceneEl.addEventListener('mousedown', (evt) => {
+            this.isRotating = true;
+            this.startPosition.x = evt.screenX;
+            this.rotation.y = this.el.object3D.rotation.y;
+        });
+
+        this.el.sceneEl.addEventListener('mousemove', (evt) => {
+            if (this.isRotating) {
+                const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 200;
+                this.el.object3D.rotation.y = this.rotation.y + deltaX; // Y-axis rotation (left-right)
+            }
+        });
+
+        this.el.sceneEl.addEventListener('mouseup', () => {
             this.isRotating = false;
-            this.startPosition = { x: 0, y: 0 };
-            this.rotation = { x: 0, y: 0 };
+        });
 
-            // Save original position to prevent drifting
-            this.originalPosition = this.el.object3D.position.clone();
+        // Touch interaction (Mobile)
+        this.el.sceneEl.addEventListener('touchstart', (evt) => {
+            this.isRotating = true;
+            this.startPosition.x = evt.touches[0].screenX;
+            this.rotation.y = this.el.object3D.rotation.y;
+        });
 
-            // Mouse interaction (Desktop)
-            this.el.sceneEl.addEventListener('mousedown', (evt) => {
-                this.isRotating = true;
-                this.startPosition.x = evt.screenX;
-                this.startPosition.y = evt.screenY;
-                this.rotation.x = this.el.object3D.rotation.x;
-                this.rotation.y = this.el.object3D.rotation.y;
-            });
+        this.el.sceneEl.addEventListener('touchmove', (evt) => {
+            if (this.isRotating) {
+                const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 200;
+                this.el.object3D.rotation.y = this.rotation.y + deltaX; // Y-axis rotation (left-right)
+            }
+        });
 
-            this.el.sceneEl.addEventListener('mousemove', (evt) => {
-                if (this.isRotating) {
-                    const deltaX = (evt.screenX - this.startPosition.x) * this.data.speed / 200;
-                    const deltaY = (evt.screenY - this.startPosition.y) * this.data.speed / 200;
-                    this.el.object3D.rotation.y = this.rotation.y + deltaX; // Y-axis rotation (left-right)
-                    this.el.object3D.rotation.x = this.rotation.x + deltaY; // X-axis rotation (up-down)
-                }
-            });
+        this.el.sceneEl.addEventListener('touchend', () => {
+            this.isRotating = false;
+        });
 
-            this.el.sceneEl.addEventListener('mouseup', () => {
-                this.isRotating = false;
-            });
+        // Ensure the position remains fixed (prevents drifting)
+        this.el.addEventListener('componentchanged', (evt) => {
+            if (evt.detail.name === 'rotation') {
+                this.el.object3D.position.copy(this.originalPosition);
+            }
+        });
+    }
+});
 
-            // Touch interaction (Mobile)
-            this.el.sceneEl.addEventListener('touchstart', (evt) => {
-                this.isRotating = true;
-                this.startPosition.x = evt.touches[0].screenX;
-                this.startPosition.y = evt.touches[0].screenY;
-                this.rotation.x = this.el.object3D.rotation.x;
-                this.rotation.y = this.el.object3D.rotation.y;
-            });
-
-            this.el.sceneEl.addEventListener('touchmove', (evt) => {
-                if (this.isRotating) {
-                    const deltaX = (evt.touches[0].screenX - this.startPosition.x) * this.data.speed / 200;
-                    const deltaY = (evt.touches[0].screenY - this.startPosition.y) * this.data.speed / 200;
-                    this.el.object3D.rotation.y = this.rotation.y + deltaX;
-                    this.el.object3D.rotation.x = this.rotation.x + deltaY;
-                }
-            });
-
-            this.el.sceneEl.addEventListener('touchend', () => {
-                this.isRotating = false;
-            });
-
-            // Ensure the position remains fixed (prevents drifting)
-            this.el.addEventListener('componentchanged', (evt) => {
-                if (evt.detail.name === 'rotation') {
-                    this.el.object3D.position.copy(this.originalPosition);
-                }
-            });
-        }
-    });
 </script>
 
 </head>
